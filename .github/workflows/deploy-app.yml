@@ -1,0 +1,27 @@
+name: Deploy App
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Set up SSH key
+              uses: webfactory/ssh-agent@v0.7.0
+              with:
+                  ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+            - name: Setup known_hosts
+              run: |
+                  mkdir -p ~/.ssh
+                  ssh-keyscan -H ${{ secrets.AMAZON_LINUX_HOST }} >> ~/.ssh/known_hosts`
+
+            - name: Deploy App to Amazon Linux
+              run: |
+                scp -r ./*hmtl ec2-user@${{ secrets.AMAZON_LINUX_HOST }}:/var/www/html/
